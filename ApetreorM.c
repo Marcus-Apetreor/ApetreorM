@@ -14,41 +14,41 @@ void mainMenu() {
         if (scanf("%d", &choice) != 1) {
             printf("Error: Invalid Input\n");
             fflush(stdin);
-            continue; //placeholder	
+            choice = 0;
         }
         switch (choice) {
-				case 1: {
-    				int back = 0;
-    				while (!back) {
-        				char password[20];
-        				int i = 0;
-        				printf("Enter password (press 0 to go back): ");
-        				while (1) {
-            				char c = getch();
-            				if (c == '\r') {  // Enter key
-                				password[i] = '\0';  // Add null terminator to end string
-                				break;
-            				} else if (c == 8 && i > 0) {  // backspace character
-                				printf("\b \b");
-            				    i--;
-        				    } else if (i < 19) {
-        				        password[i++] = c;
-        				        printf("*");
-        				    }
-        				}
-        				if (strcmp(password, "adminpassword") == 0) {
-        				    printf("\nAccess Granted. Proceeding to Manage Data.\n");
-        				    // Call your function to manage data
-        				    back = 1;
-        				} else if (strcmp(password, "0") == 0) {
-        				    printf("\nGoing back to main menu.\n");
-        				    back = 1;
-        				} else {
-            				printf("\nInvalid Password. Try again.\n");
-    				    }
-    				}
-    			break;
-				}
+		case 1: {
+    		int back = 0;
+    		while (!back) {
+        		char password[20];
+        		int i = 0;
+      				printf("Enter password (press 0 to go back): ");
+      				while (1) {
+            		char c = getch();
+           			if (c == '\r') {  // Enter key
+              				password[i] = '\0';  // Add null terminator to end string
+              				break;
+          				} else if (c == 8 && i > 0) {  // backspace character
+              				printf("\b \b");
+          				    i--;
+      				    } else if (i < 19) {
+      				        password[i++] = c;
+      				        printf("*");
+        			    }
+        			}
+        			if (strcmp(password, "adminpassword") == 0) {
+        			    printf("\nAccess Granted. Proceeding to Manage Data.\n");
+        			    // Call your function to manage data
+        			    back = 1;
+        			} else if (strcmp(password, "0") == 0) {
+        			    printf("\nGoing back to main menu.\n");
+        			    back = 1;
+        			} else {
+            			printf("\nInvalid Password. Try again.\n");
+    			    }
+    			}
+    		break;
+			}
             case 2: {
                 printf("Proceeding to Play Game.\n");
                 // Call your function to play game
