@@ -240,7 +240,7 @@ void delete_record(Question *questions, int *num_questions) {
 }
 
 // -------------------------------
-// ----- PLAY GAME FUNCTIONS -----
+// ----- GAME/SCORE FUNCTIONS -----
 // -------------------------------
 
 void load_scores(PlayerScore *scores, int *num_scores) {
@@ -269,7 +269,7 @@ void save_scores(PlayerScore *scores, int num_scores) {
 
     fprintf(fp, "%d\n", num_scores);
     for (i = 0; i < num_scores; i++) {
-        fprintf(fp, "%s %d\n", scores[i].name, scores[i].score);
+        fprintf(fp, "%s\n%d\n", scores[i].name, scores[i].score);
     }
 
     fclose(fp);
@@ -349,8 +349,13 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
             i++;
         }
         i--;
-
-        printf("\n%s\n", questions[i].question);
+		
+		printf("\n%s\n", questions[i].topic);
+        printf("Q. %s\n", questions[i].question);
+        printf("1. %s\n", questions[i].choices[0]);
+        printf("2. %s\n", questions[i].choices[1]);
+        printf("3. %s\n", questions[i].choices[2]);
+        printf("Type your answer: ");
         char answer[31];
         fgets(answer, 31, stdin);
         answer[strcspn(answer, "\n")] = '\0'; // remove trailing newline character
