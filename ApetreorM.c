@@ -46,9 +46,7 @@ void add_record(Question *questions, int *num_questions)
 
     // Ask for question and answer
     printf("Enter the question: ");
-    getchar();  // Consume the newline character
-    fgets(question, 150, stdin);
-    question[strcspn(question, "\n")] = '\0';
+    scanf("%[^\n]", question);
 
     // Check if question already exists
     int index = find_question(questions, *num_questions, question);
@@ -71,23 +69,23 @@ void add_record(Question *questions, int *num_questions)
         // Ask for topic and choices
         printf("Enter the topic: ");
         // Use %s to accept one word only
-        scanf(" %s", topic);
+        scanf("%s", topic);
         
         printf("Enter choice 1: ");
         // Use %s to accept one word only
-        scanf(" %s", choice1);
+        scanf("%s", choice1);
 
         printf("Enter choice 2: ");
-        scanf(" %s", choice2);
+        scanf("%s", choice2);
 
         printf("Enter choice 3: ");
-        scanf(" %s", choice3);
+        scanf("%s", choice3);
         
         // loop to ask for input again if error
         while(!error_checker){
             printf("Enter correct choice: ");
             // Use %s to accept one word only
-            scanf(" %s", correct_choice);
+            scanf("%s", correct_choice);
             if (*correct_choice<'1'||*correct_choice>'3'){
                 printf("Error: Invalid Input\n");
             } else {
@@ -152,7 +150,7 @@ void edit_record(Question *questions, int *num_questions)
     char new_correct_choice[31];
 	
 	while (!back){
-		printf("Edit Menu: \n");
+		printf("\n--- EDIT MENU ---\n");
 		printf("1. Edit Question \n");
 		printf("2. Edit Topic \n");
 		printf("3. Edit Choice 1 \n");
@@ -160,19 +158,15 @@ void edit_record(Question *questions, int *num_questions)
 		printf("5. Edit Choice 3 \n");
 		printf("6. Edit Correct Choice \n");
 		printf("0. Go Back \n");
-		if (scanf("%d", &choice) != 1) {
-			getchar();  // Consume the newline character
-            printf("Error: Invalid Input\n");
-            fflush(stdin);
-            choice = 0;
-        }
+		printf("\nEnter your choice: ");
+		scanf("%1d", &choice);
+		getchar();// consume newline character
 		switch (choice){
 			case 1: {
 				getchar();  // Consume the newline character
     			printf("Enter the new question: ");
     			// %[^\n]%*c to read multiple words
-    			// %*c to prevent the newline character to be left in input buffer
-    			scanf("%[^\n]%*c", new_question);
+    			scanf("%[^\n]", new_question);
     			strcpy(questions[index].question, new_question);
     			printf("Record updated successfully!\n");
     			break;
@@ -180,35 +174,35 @@ void edit_record(Question *questions, int *num_questions)
 			case 2: {
     			printf("Enter the new topic: ");
     			// %s%*c to only read one word
-    			scanf("%s%*c", new_topic);
+    			scanf("%s", new_topic);
     			strcpy(questions[index].topic, new_topic);
     			printf("Record updated successfully!\n");
 				break;
 			}
 			case 3: {
     			printf("Enter the new choice 1: ");
-    			scanf("%s%*c", new_choice1);
+    			scanf("%s", new_choice1);
     			strcpy(questions[index].choices[0], new_choice1);
     			printf("Record updated successfully!\n");
 				break;
 			}
 			case 4: {
     			printf("Enter the new choice 2: ");
-    			scanf("%s%*c", new_choice2);
+    			scanf("%s", new_choice2);
     			strcpy(questions[index].choices[1], new_choice2);
     			printf("Record updated successfully!\n");
 			break;
 			}
 			case 5: {
     			printf("Enter the new choice 3: ");
-    			scanf("%s%*c", new_choice3);
+    			scanf("%s", new_choice3);
     			strcpy(questions[index].choices[2], new_choice3);
     			printf("Record updated successfully!\n");
     		break;
     		}
 			case 6: {
 				printf("Enter the new correct choice: ");
-    			scanf("%s%*c", new_correct_choice);
+    			scanf("%s", new_correct_choice);
     			strcpy(questions[index].correct_choice, new_correct_choice);
     			printf("Record updated successfully!\n");
     		break;
@@ -232,19 +226,26 @@ void delete_record(Question *questions, int *num_questions) {
     int index;
 	int i;
 	int back = 0;
-    printf("List of questions: \n");
-    for (i = 0; i < *num_questions; i++) {
-        printf("%d. %s\n", i + 1, questions[i].question);
-    }
-    printf("0. Go Back \n");
+	int error_checker = 0;
+	
+	while (!error_checker){
+    	printf("List of questions: \n");
+    	for (i = 0; i < *num_questions; i++) {
+    	    printf("%d. %s\n", i + 1, questions[i].question);
+    	}
+    	printf("0. Go Back \n");
     
-    printf("Enter the number of the question to delete: \n");
-    if (scanf("%d", &index) < 0 || index > *num_questions) {
-        printf("Error: Invalid Input\n");
-        fflush(stdin);
-        return;
-    } else if (index == 0) {
-    	back = 1;
+    	printf("Enter the number of the question to delete: ");
+    	scanf("%d", &index);
+    	if (index < 0 || index > *num_questions) {
+    	    printf("Error: Invalid Input\n");
+    	    getchar(); 
+    	} else if (index == 0) {
+    		back = 1;
+    		error_checker = 1;
+		} else {
+		error_checker = 1;
+		}
 	}
 	
 	if (!back){
