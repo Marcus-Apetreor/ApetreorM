@@ -110,36 +110,75 @@ void add_record(Question *questions, int *num_questions)
 void edit_record(Question *questions, int *num_questions)
 {
     int choice = 0;
-	int back = 0;
-	int index;
-	int error_checker = 0;
-	int i;
-	
-	// loop to ask for input again if error
-	while (!error_checker){
-		
-		printf("List of questions: \n");
-    	for (i = 0; i < *num_questions; i++) {
-        	printf("%d. %s\n", i + 1, questions[i].question);
-    	}
- 		printf("0. Go Back \n");
-		     	
-    	// Ask for index of question to edit
-		printf("Enter the number of the question to edit (1-%d): ", *num_questions);
-		scanf("%d", &index);
-		getchar();  // Consume the newline character
+    int back = 0;
+    int index;
+    int error_checker = 0;
+    int i, j;
 
-		// Validate the index
-		if (index < 0 || index > *num_questions) {
-    		printf("Error: Invalid Input\n");
-		} else if (index == 0){
-    		error_checker = 1;
-    		back = 1;
-		} else {
-			index--;  // Decrement index to match array index
-			error_checker = 1;
-		}
-	}
+    // loop to ask for input again if error
+    while (!error_checker){
+
+        char topics[*num_questions][21];
+        int num_topics = 0;
+        for (i = 0; i < *num_questions; i++) {
+            int is_duplicate = 0;
+            for (j = 0; j < num_topics; j++) {
+                if (strcmp(topics[j], questions[i].topic) == 0) {
+                    is_duplicate = 1;
+                    break;
+                }
+            }
+            if (!is_duplicate) {
+                strcpy(topics[num_topics], questions[i].topic);
+                num_topics++;
+            }
+        }
+        printf("\nAvailable topics:\n");
+        for (i = 0; i < num_topics; i++) {
+            printf("%d. %s\n", i + 1, topics[i]);
+        }
+        printf("0. Go Back \n");
+
+        // Ask for index of topic to edit
+        printf("Enter the number of the topic to edit (1-%d): ", num_topics);
+        scanf("%d", &index);
+        getchar();  // Consume the newline character
+
+        // Validate the index
+        if (index < 0 || index > num_topics) {
+            printf("Error: Invalid Input\n");
+        } else if (index == 0){
+            error_checker = 1;
+            back = 1;
+        } else {
+            index--;  // Decrement index to match array index
+            error_checker = 1;
+        }
+
+        index = 0;
+
+        printf("List of questions: \n");
+        for (i = 0; i < *num_questions; i++) {
+            printf("%d. %s\n", i + 1, questions[i].question);
+        }
+        printf("0. Go Back \n");
+
+        // Ask for index of question to edit
+        printf("Enter the number of the question to edit (1-%d): ", *num_questions);
+        scanf("%d", &index);
+        getchar();  // Consume the newline character
+
+        // Validate the index
+        if (index < 0 || index > *num_questions) {
+            printf("Error: Invalid Input\n");
+        } else if (index == 0){
+            error_checker = 1;
+            back = 1;
+        } else {
+            index--;  // Decrement index to match array index
+            error_checker = 1;
+        }
+    }
 
     // Prompt for new information
     char new_question[151];
