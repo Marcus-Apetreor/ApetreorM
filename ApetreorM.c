@@ -16,6 +16,26 @@ typedef struct {
     int score;
 } PlayerScore;
 
+// -------------------------------
+// ----- FUNCTION PROTOTYPES -----
+// -------------------------------
+
+int find_question(Question *questions, int num_questions, char *question);
+void add_record(Question *questions, int *num_questions);
+void edit_record(Question *questions, int *num_questions);
+void delete_record(Question *questions, int *num_questions);
+void import_data(Question *questions, int *num_questions);
+void export_data(Question *questions, int *num_questions);
+void load_scores(PlayerScore *scores, int *num_scores);
+void save_scores(PlayerScore *scores, int num_scores);
+void add_score(PlayerScore *scores, int *num_scores, char *name, int score);
+void display_scores(PlayerScore *scores, int *num_scores);
+void play_game(Question *questions, int num_questions, PlayerScore *scores, int *num_scores);
+void admin_menu(Question *questions, int *num_questions);
+void game_menu(Question *questions, int num_questions, PlayerScore *scores, int *num_scores);
+void main_menu(Question *questions, int num_questions, char *question, PlayerScore *scores, int *num_scores);
+
+
 // --------------------------------------------
 // ----- ADMIN RECORD MANAGEMENT FUNCTIONS-----
 // --------------------------------------------
@@ -112,6 +132,7 @@ void add_record(Question *questions, int *num_questions)
 
 void edit_record(Question *questions, int *num_questions)
 {
+	int flag1 = 0;
     int choice = 0;
     int back = 0;
     int index;
@@ -119,16 +140,15 @@ void edit_record(Question *questions, int *num_questions)
     int i, j;
 
     // loop to ask for input again if error
-    while (!error_checker){
-
+    while (!error_checker && !back){
         char topics[*num_questions][21];
         int num_topics = 0;
         for (i = 0; i < *num_questions; i++) {
             int is_duplicate = 0;
             for (j = 0; j < num_topics; j++) {
-                if (strcmp(topics[j], questions[i].topic) == 0) {
+                if (!strcmp(topics[j], questions[i].topic)) {
                     is_duplicate = 1;
-                    break;
+                    flag1 = 1;
                 }
             }
             if (!is_duplicate) {
@@ -136,6 +156,7 @@ void edit_record(Question *questions, int *num_questions)
                 num_topics++;
             }
         }
+        if (!flag1){
         printf("\nAvailable topics:\n");
         for (i = 0; i < num_topics; i++) {
             printf("%d. %s\n", i + 1, topics[i]);
@@ -143,8 +164,8 @@ void edit_record(Question *questions, int *num_questions)
         printf("0. Go Back \n");
 
         // Ask for index of topic to edit
-        printf("Enter the number of the topic to edit (1-%d): ", num_topics);
-        scanf("%1d", &index);
+        printf("Enter the number of the topic to edit (0-%d): ", num_topics);
+        scanf("%d", &index);
 
         // Validate the index
         if (index < 0 || index > num_topics) {
@@ -155,28 +176,35 @@ void edit_record(Question *questions, int *num_questions)
         } else {
             index--;  // Decrement index to match array index
             error_checker = 1;
-        }
 
-        printf("List of questions: \n");
-        for (i = 0; i < *num_questions; i++) {
-            printf("%d. %s\n", i + 1, questions[i].question);
-        }
-        printf("0. Go Back \n");
+            // Display all questions from the selected topic
+            if (!back){
+            printf("\nList of questions from topic \"%s\":\n", topics[index]);
+            int num_questions_from_topic = 0;
+            for (i = 0; i < *num_questions; i++) {
+                if (!strcmp(questions[i].topic, topics[index])) {
+                    printf("%d. %s\n", num_questions_from_topic + 1, questions[i].question);
+                    num_questions_from_topic++;
+                }
+            }
+            printf("0. Go Back\n");
 
-        // Ask for index of question to edit
-        printf("Enter the number of the question to edit (1-%d): ", *num_questions);
-        scanf("%1d", &index);
+            // Ask for index of question to edit
+            printf("Enter the number of the question to edit (0-%d): ", num_questions_from_topic);
+            scanf("%d", &index);
 
-        // Validate the index
-        if (index < 0 || index > *num_questions) {
-            printf("Error: Invalid Input\n");
-        } else if (index == 0){
-            error_checker = 1;
-            back = 1;
-        } else {
-            index--;  // Decrement index to match array index
-            error_checker = 1;
+            // Validate the index
+            if (index < 0 || index > num_questions_from_topic) {
+                printf("Error: Invalid Input\n");
+                error_checker = 0;
+            } else if (index == 0){
+                back = 1;
+            } else {
+                index--;  // Decrement index to match array index
+            }
+        	}    
         }
+		}
     }
 
     // Prompt for new information
@@ -259,43 +287,111 @@ void edit_record(Question *questions, int *num_questions)
 	}
 }
 
-void delete_record(Question *questions, int *num_questions) {
-    int index;
-	int i;
-	int back = 0;
-	int error_checker = 0;
-	
-	while (!error_checker){
-    	printf("List of questions: \n");
-    	for (i = 0; i < *num_questions; i++) {
-    	    printf("%d. %s\n", i + 1, questions[i].question);
+void delete_record(Question *questions, int *num_questions) 
+{
+	int flag1 = 0;
+    int i, j;
+    int topic_index, question_index;
+    int back = 0;
+    int error_checker = 0;
+
+    // Create an array of unique topics
+    char topics[*num_questions][21];
+    int num_topics = 0;
+    int found = 0;
+	for (i = 0; i < *num_questions && !found; i++) {
+    	int is_duplicate = 0;
+    	for (j = 0; j < num_topics && !found; j++) {
+        	if (strcmp(topics[j], questions[i].topic) == 0) {
+            	is_duplicate = 1;
+            	found = 1;
+        	}
     	}
-    	printf("0. Go Back \n");
-    
-    	printf("Enter the number of the question to delete: ");
-    	scanf("%1d", &index);
-    	if (index < 0 || index > *num_questions) {
-    	    printf("Error: Invalid Input\n");
-    	    getchar(); 
-    	} else if (index == 0) {
-    		back = 1;
-    		error_checker = 1;
-		} else {
-		error_checker = 1;
-		}
+    	if (!is_duplicate) {
+        	strcpy(topics[num_topics], questions[i].topic);
+        	num_topics++;
+    	}
 	}
-	
-	if (!back){
-    	// Shift all the elements after the deleted element to fill the gap
-    	for (i = index - 1; i < *num_questions - 1; i++) {
-    	    questions[i] = questions[i+1];
+
+    // Display topics and their associated questions
+    printf("\nAvailable topics:\n");
+    for (i = 0; i < num_topics; i++) {
+        printf("%d. %s\n", i + 1, topics[i]);
+    }
+
+    // Prompt the user to choose a topic
+    while (!error_checker){
+        printf("Enter the number of the topic to delete a question from (type '0' to go back): ");
+        scanf("%d", &topic_index);
+        if (topic_index < 0 || topic_index > num_topics) {
+            printf("Error: Invalid Input\n");
+            getchar();
+        } else if (topic_index == 0) {
+            back = 1;
+            error_checker = 1;
+        } else {
+            error_checker = 1;
+        }
+    }
+
+    if (!back) {
+        // Display questions associated with the chosen topic
+        printf("Questions in topic %s:\n", topics[topic_index - 1]);
+        int num_questions_in_topic = 0;
+        for (i = 0; i < *num_questions; i++) {
+            if (strcmp(questions[i].topic, topics[topic_index - 1]) == 0) {
+                num_questions_in_topic++;
+                printf("%d. %s\n", num_questions_in_topic, questions[i].question);
+            }
+        }
+
+        // Prompt the user to choose a question
+        error_checker = 0;
+        while (!error_checker) {
+            printf("Enter the number of the question to delete (type '0' to go back): ");
+            scanf("%d", &question_index);
+            if (question_index < 0 || question_index > num_questions_in_topic) {
+                printf("Error: Invalid Input\n");
+                getchar();
+            } else if (question_index == 0) {
+                back = 1;
+                error_checker = 1;
+            } else {
+                error_checker = 1;
+            }
+        }
+
+        if (!back) {
+            // Find the index of the selected question in the original array
+            int original_index = 0;
+            for (i = 0; i < *num_questions; i++) {
+                if (strcmp(questions[i].topic, topics[topic_index - 1]) == 0) {
+                    original_index++;
+                }
+                if (original_index == question_index) {
+                    flag1 = 1;
+                }
+            }
+            
+            if (!flag1){
+			// Shift all the elements after the deleted element to fill the gap
+        	for (i = original_index; i < *num_questions - 1; i++) {
+        	    questions[i] = questions[i + 1];
+        	}
+        	(*num_questions)--;
+        	printf("The selected question has been deleted.\n");
+    	} else {
+        	printf("Returning to main menu...\n");
     	}
-    	(*num_questions)--;  // Decrement the number of questions
-    	printf("Record deleted successfully.\n");
+	} else {
+    printf("Returning to main menu...\n");
+	}
 	}
 }
+            
 
-void import_data(Question *questions, int *num_questions) {
+void import_data(Question *questions, int *num_questions) 
+{
     char filename[31];
     FILE *fp;
     int error_checker = 0;
@@ -320,7 +416,7 @@ void import_data(Question *questions, int *num_questions) {
             fp = fopen(filename, "r");
         }
     }
-
+	
     // Read file contents and store in the array of questions
     char topic[21];
     int question_number;
@@ -329,7 +425,7 @@ void import_data(Question *questions, int *num_questions) {
     char correct_choice[31];
 
     if (!error_checker) {
-        while (fscanf(fp, "%s\n%d\n%[^\n]\n%s\n%s\n%s\n%s\n", topic, &question_number, question, choices[0], choices[1], choices[2], correct_choice) != EOF) {
+	        while (fscanf(fp, "%s\n%d\n%[^\n]\n%s\n%s\n%s\n%s\n\n", topic, &question_number, question, choices[0], choices[1], choices[2], correct_choice) != EOF) {
             // Check if question already exists in the array
             if (find_question(questions, *num_questions, question) != -1) {
                 printf("Question '%s' already exists, skipping...\n", question);
@@ -362,7 +458,8 @@ void import_data(Question *questions, int *num_questions) {
     }
 }
 
-void export_data(Question *questions, int *num_questions) {
+void export_data(Question *questions, int *num_questions) 
+{
     char filename[31];
     FILE *fp;
     int error_checker = 0;
@@ -399,67 +496,115 @@ void export_data(Question *questions, int *num_questions) {
 // ----- GAME/SCORE FUNCTIONS -----
 // --------------------------------
 
-void load_scores(PlayerScore *scores, int *num_scores) {
-	int i;
+void load_scores(PlayerScore *scores, int *num_scores) 
+{
+	int flag1 = 0;
+	int flag2 = 0;
+    static int loaded = 0;
+    if (loaded) {
+        flag1 = 1;
+    }
+
+    int i = 0;
+    if (!flag1){
     FILE *fp = fopen("scores.txt", "r");
     if (fp == NULL) {
-        *num_scores = 0;
-        return;
+        printf("Unable to open file for reading scores!\n");
+        flag2 = 1;
     }
-    
-    fscanf(fp, "%d", num_scores);
-    for (i = 0; i < *num_scores; i++) {
-        fscanf(fp, "%s %d", scores[i].name, &scores[i].score);
+    if (!flag2){
+    while (fscanf(fp, "%s %d", scores[i].name, &scores[i].score) != EOF) {
+        i++;
     }
-
+    *num_scores = i;
     fclose(fp);
+	
+    loaded = 1;
+	}
+	}
 }
 
-void save_scores(PlayerScore *scores, int num_scores) {
-    int i;
-    FILE *fp = fopen("scores.txt", "a");
+void save_scores(PlayerScore *scores, int num_scores) 
+{
+	int flag1 = 0;
+	int flag2 = 0;
+    int i, j;
+    int name_exists = 0;
+    FILE *fp = fopen("scores.txt", "w");
     if (fp == NULL) {
         printf("Unable to open file for saving scores!\n");
-        return;
+        flag1 = 1;
     }
-
+    if (!flag1){
     for (i = 0; i < num_scores; i++) {
-        fprintf(fp, "%s\n%d\n\n", scores[i].name, scores[i].score);
+        name_exists = 0;
+        for (j = 0; j < num_scores; j++) {
+            if (i != j && strcmp(scores[i].name, scores[j].name) == 0) {
+                name_exists = 1;
+                if (scores[i].score > scores[j].score) {
+                    scores[j].score = scores[i].score;
+                }
+                flag2 = 1;
+            }
+        }
+        if (!name_exists&&!flag2) {
+            fprintf(fp, "%s\n%d\n\n", scores[i].name, scores[i].score);
+        }
     }
-
+	}
     fclose(fp);
 }
 
 void add_score(PlayerScore *scores, int *num_scores, char *name, int score) {
+	int flag1 = 0;
+	int flag2 = 0;
     if (*num_scores == 50) {
         printf("Unable to add score - maximum number of scores reached!\n");
-        return;
+        flag1 = 1;
     }
 
+    int i;
+    if (!flag1){
+    for (i = 0; i < *num_scores; i++) {
+        if (strcmp(scores[i].name, name) == 0) {
+            scores[i].score += score;
+            flag2 = 1;
+        }
+    }
+	
+	if (!flag2){
     PlayerScore new_score;
     strncpy(new_score.name, name, 21);
     new_score.score = score;
     scores[*num_scores] = new_score;
     (*num_scores)++;
+	}
+	}
 }
 
-void display_scores(PlayerScore *scores, int num_scores) {
-	int i;
+void display_scores(PlayerScore *scores, int *num_scores)
+{
+    load_scores(scores, num_scores);
+    int i;
     printf("Top Scores:\n");
     printf("-----------\n");
-    for (i = 0; i < num_scores; i++) {
+    for (i = 0; i < *num_scores; i++) {
         printf("%d. %s - %d\n", i+1, scores[i].name, scores[i].score);
     }
 }
 
 void play_game(Question *questions, int num_questions, PlayerScore *scores, int *num_scores) {
+	int flag1 = 0;
+	int flag2 = 0;
+	int flag3 = 0;
+	int flag4 = 0;
     char name[21];
     int i, j;
     printf("Enter your name: ");
     scanf("%s", name);
 
     int score = 0;
-    while (1) {
+    while (1&&!flag2) {
         // Create an array of unique topics
         char topics[num_questions][21];
         int num_topics = 0;
@@ -468,15 +613,16 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
             for (j = 0; j < num_topics; j++) {
                 if (strcmp(topics[j], questions[i].topic) == 0) {
                     is_duplicate = 1;
-                    break;
+                    flag1 = 1;
                 }
             }
-            if (!is_duplicate) {
+            if (!is_duplicate && !flag1) {
                 strcpy(topics[num_topics], questions[i].topic);
                 num_topics++;
             }
         }
-
+		
+		if (!flag1){
         // Display topics and their associated questions
         printf("\nAvailable topics:\n");
         for (i = 0; i < num_topics; i++) {
@@ -488,23 +634,25 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
                 }
             }
         }
-        printf("%d. End game\n", num_topics + 1);
+        printf("0. End game\n");
 
         int choice;
         printf("\nEnter your choice: ");
-        scanf("%d", &choice);
+        scanf("%1d%*c", &choice);
 
-        if (choice == num_topics + 1) {
+        if (choice == 0) {
             printf("\n%s, your final score is %d.\n", name, score);
             add_score(scores, num_scores, name, score);
-            return;
+            flag2 = 1;
         }
-
+		
+		if (!flag2){
         if (choice < 1 || choice > num_topics) {
             printf("\nInvalid choice. Please try again.\n");
-            continue;
+            flag3 = 1;
         }
-
+		
+		if (!flag3){
         int count = 0;
         for (i = 0; i < num_questions; i++) {
             if (strcmp(questions[i].topic, topics[choice - 1]) == 0) {
@@ -514,9 +662,10 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
 
         if (count == 0) {
             printf("\nNo questions available for this topic. Please choose another topic.\n");
-            continue;
+            flag4 = 1;
         }
-
+		
+		if(!flag4){
         int index = rand() % count + 1;
         i = 0;
         while (index > 0) {
@@ -534,8 +683,7 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
         printf("3. %s\n", questions[i].choices[2]);
         printf("\nType your answer: ");
         char answer[31];
-        fgets(answer, 31, stdin);
-        answer[strcspn(answer, "\n")] = '\0'; // remove trailing newline character
+        scanf("%s", answer);
 
         if (strcmp(answer, questions[i].correct_choice) == 0) {
             printf("Correct! You earned 1 point.\n");
@@ -543,6 +691,10 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
         } else {
             printf("Sorry, the correct answer is: %s\n", questions[i].correct_choice);
         }
+    	}
+    	}
+    	}
+    	}
     }
 }
 
@@ -550,7 +702,8 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
 // ----- MENU FUNCTIONS -----
 // --------------------------
 
-void admin_menu(Question *questions, int *num_questions) {
+void admin_menu(Question *questions, int *num_questions) 
+{
     int choice = 0;
     int adminAccess = 1;
 
@@ -587,7 +740,7 @@ void admin_menu(Question *questions, int *num_questions) {
                 break;
             }
             case 0: {
-                printf("\nGoing back to main menu.\n");
+                printf("\nExiting admin menu...\n");
                 adminAccess = 0;
                 break;
             }
@@ -599,7 +752,8 @@ void admin_menu(Question *questions, int *num_questions) {
     }
 }
 
-void game_menu(Question *questions, int num_questions, PlayerScore *scores, int *num_scores) {
+void game_menu(Question *questions, int num_questions, PlayerScore *scores, int *num_scores) 
+{
     int choice;
     do {
         printf("\n--- GAME MENU ---\n");
@@ -607,13 +761,13 @@ void game_menu(Question *questions, int num_questions, PlayerScore *scores, int 
         printf("2. View Scores\n");
         printf("0. Exit\n");
         printf("\nEnter your choice: ");
-        scanf("%1d", &choice);
+        scanf("%1d%*c", &choice);
         switch (choice) {
             case 1:
                 play_game(questions, num_questions, scores, num_scores);
                 break;
             case 2:
-                display_scores(scores, *num_scores);
+                display_scores(scores, num_scores);
                 break;
             case 0:
                 save_scores(scores, *num_scores); // save scores before exiting
@@ -627,16 +781,17 @@ void game_menu(Question *questions, int num_questions, PlayerScore *scores, int 
 }
 
 
-void main_menu(Question *questions, int num_questions, char *question, PlayerScore *scores, int *num_scores) {
+void main_menu(Question *questions, int num_questions, char *question, PlayerScore *scores, int *num_scores) 
+{
     int choice = -1;
     int back = 0;
     while (!back) {
         printf("\n--- MAIN MENU ---\n");
         printf("1. Manage Data [Admin]\n");
         printf("2. Game Menu\n");
-        printf("0. Exit\n");
+        printf("0. Exit Program\n");
         printf("\nEnter your choice: ");
-		scanf("%1d", &choice);
+		scanf("%1d%*c", &choice);
         switch (choice) {
 			case 1: {
  		    	int back = 0;
@@ -644,11 +799,12 @@ void main_menu(Question *questions, int num_questions, char *question, PlayerSco
         			char password[21];
         			int i = 0;
         			printf("Enter password (press 0 to go back): ");
-        					while (1) {
+        				int enter = 0;
+        				while (!enter) {
             			char c = getch();
             			if (c == '\r') {  // Enter key
                 			password[i] = '\0';  // Add null terminator to end string
-                			break;
+                			enter = 1;
             			} else if (c == 8) {  // backspace character
                 			if (i > 0) {
                 				printf("\b \b");
@@ -677,7 +833,7 @@ void main_menu(Question *questions, int num_questions, char *question, PlayerSco
     			break;
 			}
             case 0: {
-                printf("Exiting program.\n");
+                printf("Exiting program...\n");
                 back = 1;
                 break;
             }
@@ -692,7 +848,7 @@ void main_menu(Question *questions, int num_questions, char *question, PlayerSco
 
 int main() {
 	Question questions[11];
-    int num_questions = 1;
+    int num_questions = 0;
     char question[151];
     PlayerScore scores[11];
     int num_scores = 0;
