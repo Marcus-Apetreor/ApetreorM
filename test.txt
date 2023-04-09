@@ -1,0 +1,16 @@
+logic
+1
+what color is the sky?
+red
+blue
+green
+blue
+
+math
+1
+what is 9 + 10?
+21
+19
+910
+21
+

@@ -40,7 +40,7 @@ void add_record(Question *questions, int *num_questions)
     char choice1[31];
     char choice2[31];
     char choice3[31];
-    char topic[21];
+    char topic[21]; 
     int back = 0;
 
     // Ask for question and answer
@@ -53,6 +53,7 @@ void add_record(Question *questions, int *num_questions)
     if (index != -1) {
         printf("The question already exists:\n");
         printf("Topic: %s\n", questions[index].topic);
+        printf("Question number: %d\n", questions[index].question_number);
         printf("Question: %s\n", questions[index].question);
         printf("Choice 1: %s\n", questions[index].choices[0]);
         printf("Choice 2: %s\n", questions[index].choices[1]);
@@ -66,35 +67,46 @@ void add_record(Question *questions, int *num_questions)
     if (!back){
         
         // Ask for topic and choices
-        printf("Enter the topic: ");
-        // Use %s to accept one word only
-        scanf("%s", topic);
-        
-        printf("Enter choice 1: ");
-        // Use %s to accept one word only
-        scanf("%s", choice1);
+		printf("Enter the topic: ");
+		// Use %s to accept one word only
+		scanf("%s", topic);
 
-        printf("Enter choice 2: ");
-        scanf("%s", choice2);
-        
-        printf("Enter choice 3: ");
-        scanf("%s", choice3);
-        
-        printf("Enter correct choice:");
-        scanf("%s", correct_choice);
+		// Find the last question in the topic
+		int question_number = 0;
+		int i;
+		for (i = 0; i < *num_questions; i++) {
+			if (strcmp(questions[i].topic, topic) == 0 && questions[i].question_number > question_number) {
+				question_number = questions[i].question_number;
+			}
+		}
 
-        // Add the record to the collection
-        Question new_question;
-        strcpy(new_question.topic, topic);
-        strcpy(new_question.question, question);
-        strcpy(new_question.choices[0], choice1);
-        strcpy(new_question.choices[1], choice2);
-        strcpy(new_question.choices[2], choice3);
-        strcpy(new_question.correct_choice, correct_choice);
+		printf("Enter choice 1: ");
+		// Use %s to accept one word only
+		scanf("%s", choice1);
 
-        questions[*num_questions] = new_question;
-        (*num_questions)++;
-        printf("Record added successfully!\n");
+		printf("Enter choice 2: ");
+		scanf("%s", choice2);
+
+		printf("Enter choice 3: ");
+		scanf("%s", choice3);
+
+		printf("Enter correct choice: ");
+		scanf("%s", correct_choice);
+
+		// Add the record to the collection
+		Question new_question;
+		strcpy(new_question.topic, topic);
+		new_question.question_number = question_number + 1; // Increment the question number for this topic
+		strcpy(new_question.question, question);
+		strcpy(new_question.choices[0], choice1);
+		strcpy(new_question.choices[1], choice2);
+		strcpy(new_question.choices[2], choice3);
+		strcpy(new_question.correct_choice, correct_choice);
+
+		// Index is (*num_questions) since arrays are 0-indexed
+		questions[*num_questions] = new_question;
+		(*num_questions)++;
+		printf("Record added successfully!\n");
     }
 }
 
@@ -286,8 +298,9 @@ void delete_record(Question *questions, int *num_questions) {
 void import_data(Question *questions, int *num_questions) {
     char filename[31];
     FILE *fp;
-	int error_checker = 0;
-	
+    int error_checker = 0;
+    int question_found = 0;
+
     // Ask for filename
     printf("Enter the filename to load: ");
     scanf("%s", filename);
@@ -303,9 +316,9 @@ void import_data(Question *questions, int *num_questions) {
         if (strcmp(filename, "0") == 0) {
             error_checker = 1;
         }
-        if (!error_checker){
-        	fp = fopen(filename, "r");
-    	}
+        if (!error_checker) {
+            fp = fopen(filename, "r");
+        }
     }
 
     // Read file contents and store in the array of questions
@@ -314,27 +327,39 @@ void import_data(Question *questions, int *num_questions) {
     char question[151];
     char choices[3][31];
     char correct_choice[31];
-    
-    if (!error_checker){
-    	while (fscanf(fp, "%s\n%d\n%[^\n]\n%s\n%s\n%s\n%s\n", topic, &question_number, question, choices[0], choices[1], choices[2], correct_choice) != EOF) {
-        	Question new_question;
-        	strcpy(new_question.topic, topic);
-        	new_question.question_number = question_number;
-        	strcpy(new_question.question, question);
-        	strcpy(new_question.choices[0], choices[0]);
-        	strcpy(new_question.choices[1], choices[1]);
-        	strcpy(new_question.choices[2], choices[2]);
-        	strcpy(new_question.correct_choice, correct_choice);
 
-        	questions[*num_questions] = new_question;
-        	(*num_questions)++;
-    	}
+    if (!error_checker) {
+        while (fscanf(fp, "%s\n%d\n%[^\n]\n%s\n%s\n%s\n%s\n", topic, &question_number, question, choices[0], choices[1], choices[2], correct_choice) != EOF) {
+            // Check if question already exists in the array
+            if (find_question(questions, *num_questions, question) != -1) {
+                printf("Question '%s' already exists, skipping...\n", question);
+                question_found = 1;
+            }
+			
+			// if question_found is true, skips adding the question to the array
+			if (!question_found){
+            // Add new question to the array
+            Question new_question;
+            strcpy(new_question.topic, topic);
+            new_question.question_number = question_number;
+            strcpy(new_question.question, question);
+            strcpy(new_question.choices[0], choices[0]);
+            strcpy(new_question.choices[1], choices[1]);
+            strcpy(new_question.choices[2], choices[2]);
+            strcpy(new_question.correct_choice, correct_choice);
 
-    	// Close the file
-    	fclose(fp);
-    	
-    	printf("Data imported successfully!\n");
-	}
+            questions[*num_questions] = new_question;
+            (*num_questions)++;
+        	}
+        	
+        	question_found = 0;
+        }
+
+        // Close the file
+        fclose(fp);
+
+        printf("Data imported successfully!\n");
+    }
 }
 
 void export_data(Question *questions, int *num_questions) {
@@ -358,8 +383,8 @@ void export_data(Question *questions, int *num_questions) {
     // Write contents of array of questions to file
     int i;
     if (!error_checker){
-    for (i = 0; i < *num_questions; i++) {
-        fprintf(fp, "%s\n%d\n%s\n%s\n%s\n%s\n%s\n", questions[i].topic, questions[i].question_number, questions[i].question, questions[i].choices[0], questions[i].choices[1], questions[i].choices[2], questions[i].correct_choice);
+    for (i = 1; i < *num_questions; i++) {
+        fprintf(fp, "%s\n%d\n%s\n%s\n%s\n%s\n%s\n\n", questions[i].topic, questions[i].question_number, questions[i].question, questions[i].choices[0], questions[i].choices[1], questions[i].choices[2], questions[i].correct_choice);
     }
 
     // Close the file
@@ -538,7 +563,7 @@ void admin_menu(Question *questions, int *num_questions) {
         printf("5. Export Data\n");
         printf("0. Sign Out\n");
         printf("\nEnter your choice: ");
-        scanf("%1d", &choice);
+        scanf("%1d%*c", &choice);
         
         switch (choice) {
             case 1: {
@@ -667,7 +692,7 @@ void main_menu(Question *questions, int num_questions, char *question, PlayerSco
 
 int main() {
 	Question questions[11];
-    int num_questions = 0;
+    int num_questions = 1;
     char question[151];
     PlayerScore scores[11];
     int num_scores = 0;
