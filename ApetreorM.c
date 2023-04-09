@@ -335,7 +335,7 @@ void delete_record(Question *arrQuestions, int *nQuestions)
     int error_checker = 0;
 
     // Create an array of unique topics
-    char topics[*nQuestions][21];
+    char topics[*nQuestions][50];
     int num_topics = 0;
     int found = 0;
 	for (i = 0; i < *nQuestions && !found; i++) {
@@ -952,10 +952,10 @@ void main_menu(Question *arrQuestions, int nQuestions, char *strQuestion, Player
 /* main() is used to initialize values and array/string sizes, return 0 and exits program when player exits main menu
 */
 int main() {
-	Question arrQuestions[11];
+	Question arrQuestions[151];
     int nQuestions = 0;
     char strQuestion[151];
-    PlayerScore arrScores[11];
+    PlayerScore arrScores[151];
     int nScores = 0;
     
     main_menu(arrQuestions, nQuestions, strQuestion, arrScores, &nScores);
