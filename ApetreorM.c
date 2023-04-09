@@ -41,7 +41,6 @@ void add_record(Question *questions, int *num_questions)
     char choice2[31];
     char choice3[31];
     char topic[21];
-    int error_checker = 0;
     int back = 0;
 
     // Ask for question and answer
@@ -81,17 +80,9 @@ void add_record(Question *questions, int *num_questions)
         printf("Enter choice 3: ");
         scanf("%s", choice3);
         
-        // loop to ask for input again if error
-        while(!error_checker){
-            printf("Enter correct choice: (1-3)");
-            // Use %s to accept one word only
-            scanf("%s", correct_choice);
-            if (*correct_choice<'1'||*correct_choice>'3'){
-                printf("Error: Invalid Input\n");
-            } else {
-                error_checker=1;
-            } 
-        }
+        printf("Enter correct choice:");
+        scanf("%s", correct_choice);
+
         // Add the record to the collection
         Question new_question;
         strcpy(new_question.topic, topic);
@@ -225,21 +216,21 @@ void edit_record(Question *questions, int *num_questions)
     			scanf("%s", new_choice2);
     			strcpy(questions[index].choices[1], new_choice2);
     			printf("Record updated successfully!\n");
-			break;
+				break;
 			}
 			case 5: {
     			printf("Enter the new choice 3: ");
     			scanf("%s", new_choice3);
     			strcpy(questions[index].choices[2], new_choice3);
     			printf("Record updated successfully!\n");
-    		break;
+    			break;
     		}
 			case 6: {
 				printf("Enter the new correct choice: ");
     			scanf("%s", new_correct_choice);
     			strcpy(questions[index].correct_choice, new_correct_choice);
     			printf("Record updated successfully!\n");
-    		break;
+    			break;
     		}
 			case 0: {
 				printf("Exiting edit menu");
@@ -291,6 +282,93 @@ void delete_record(Question *questions, int *num_questions) {
     	printf("Record deleted successfully.\n");
 	}
 }
+
+void import_data(Question *questions, int *num_questions) {
+    char filename[31];
+    FILE *fp;
+	int error_checker = 0;
+	
+    // Ask for filename
+    printf("Enter the filename to load: ");
+    scanf("%s", filename);
+
+    // Try to open the file
+    fp = fopen(filename, "r");
+
+    // If file not found, display message and ask again
+    while (fp == NULL) {
+        printf("Error: File not found.\n");
+        printf("Enter the filename to load (type '0' to go back): ");
+        scanf("%s", filename);
+        if (strcmp(filename, "0") == 0) {
+            error_checker = 1;
+        }
+        if (!error_checker){
+        	fp = fopen(filename, "r");
+    	}
+    }
+
+    // Read file contents and store in the array of questions
+    char topic[21];
+    int question_number;
+    char question[151];
+    char choices[3][31];
+    char correct_choice[31];
+    
+    if (!error_checker){
+    	while (fscanf(fp, "%s\n%d\n%[^\n]\n%s\n%s\n%s\n%s\n", topic, &question_number, question, choices[0], choices[1], choices[2], correct_choice) != EOF) {
+        	Question new_question;
+        	strcpy(new_question.topic, topic);
+        	new_question.question_number = question_number;
+        	strcpy(new_question.question, question);
+        	strcpy(new_question.choices[0], choices[0]);
+        	strcpy(new_question.choices[1], choices[1]);
+        	strcpy(new_question.choices[2], choices[2]);
+        	strcpy(new_question.correct_choice, correct_choice);
+
+        	questions[*num_questions] = new_question;
+        	(*num_questions)++;
+    	}
+
+    	// Close the file
+    	fclose(fp);
+    	
+    	printf("Data imported successfully!\n");
+	}
+}
+
+void export_data(Question *questions, int *num_questions) {
+    char filename[31];
+    FILE *fp;
+    int error_checker = 0;
+
+    // Ask for filename
+    printf("Enter the filename to save: ");
+    scanf("%s", filename);
+
+    // Try to open the file
+    fp = fopen(filename, "w");
+
+    // If file cannot be found, display error message and skip rest of the function
+    if (fp == NULL) {
+        printf("Error: File cannot be found.\n");
+        error_checker = 1;
+    }
+
+    // Write contents of array of questions to file
+    int i;
+    if (!error_checker){
+    for (i = 0; i < *num_questions; i++) {
+        fprintf(fp, "%s\n%d\n%s\n%s\n%s\n%s\n%s\n", questions[i].topic, questions[i].question_number, questions[i].question, questions[i].choices[0], questions[i].choices[1], questions[i].choices[2], questions[i].correct_choice);
+    }
+
+    // Close the file
+    fclose(fp);
+
+    printf("Data exported successfully!\n");
+	}
+}
+
 
 // --------------------------------
 // ----- GAME/SCORE FUNCTIONS -----
@@ -456,6 +534,8 @@ void admin_menu(Question *questions, int *num_questions) {
         printf("1. Add Record\n");
         printf("2. Edit Record\n");
         printf("3. Delete Record\n");
+        printf("4. Import Data\n");
+        printf("5. Export Data\n");
         printf("0. Sign Out\n");
         printf("\nEnter your choice: ");
         scanf("%1d", &choice);
@@ -471,6 +551,14 @@ void admin_menu(Question *questions, int *num_questions) {
             }
             case 3: {
                 delete_record(questions, num_questions);
+                break;
+            }
+            case 4: {
+                import_data(questions, num_questions);
+                break;
+            }
+            case 5: {
+                export_data(questions, num_questions);
                 break;
             }
             case 0: {
