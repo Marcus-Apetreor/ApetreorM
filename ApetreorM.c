@@ -116,7 +116,7 @@ void add_record(Question *arrQuestions, int *nQuestions)
     if (!back){
         
         // Ask for strTopic and strChoices
-		printf("Enter the strTopic: ");
+		printf("Enter the topic: ");
 		// Use %s to accept one word only
 		scanf("%s", strTopic);
 
