@@ -1,7 +1,23 @@
+/*********************************************************************************************************
+This is to certify that this project is my own work, based on my personal efforts in studying and applying the concepts
+learned. I have constructed the functions and their respective algorithms and corresponding code by myself. The
+program was run, tested, and debugged by my own efforts. I further certify that I have not copied in part or whole or
+otherwise plagiarized the work of other students and/or persons.
+LEE JACOB MARCUS A. APETREOR, DLSU ID #12274410
+*********************************************************************************************************/
+
+// -------------------
+// ----- HEADERS -----
+// -------------------
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
+
+// -------------------
+// ----- STRUCTS -----
+// -------------------
 
 typedef struct {
     char topic[21];
@@ -40,6 +56,13 @@ void main_menu(Question *questions, int num_questions, char *question, PlayerSco
 // ----- ADMIN RECORD MANAGEMENT FUNCTIONS-----
 // --------------------------------------------
 
+/* find_question returns t, which is either i or -1. it returns -1 if there are no same questions
+	@param *questions is used to refer to the array questions[]
+	@param *question is used to refer to the string to compare to see if it exists in the array
+	@param num_questions is used to refer to the maximum amount of questions
+	@return -1 if there are no similar questions found in the array when compared with param *question
+	pre-condition: question can only be 150 characters long
+*/
 int find_question(Question *questions, int num_questions, char *question)
 {
 	int i, t=-1;
@@ -53,6 +76,12 @@ int find_question(Question *questions, int num_questions, char *question)
     return t;
 }
 
+/* add_record is used to add a unique record based on the question to the array questions[]
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	@return void
+	pre-condition: needs to be a unique question to add to the array
+*/
 void add_record(Question *questions, int *num_questions)
 {
     char question[151];
@@ -130,6 +159,11 @@ void add_record(Question *questions, int *num_questions)
     }
 }
 
+/* edit_record is used to edit already existing records, user needs to choose a topic, then a question inside that topic
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	pre-condition: needs to be an already existing record to edit
+*/
 void edit_record(Question *questions, int *num_questions)
 {
 	int flag1 = 0;
@@ -287,6 +321,11 @@ void edit_record(Question *questions, int *num_questions)
 	}
 }
 
+/* delete_record makes the user choose a topic then an existing question inside that topic to delete
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	pre-condition: needs to be an already existing record to delete
+*/
 void delete_record(Question *questions, int *num_questions) 
 {
 	int flag1 = 0;
@@ -389,7 +428,11 @@ void delete_record(Question *questions, int *num_questions)
 	}
 }
             
-
+/* import_data imports information from .txt files and turns it into a record that is stored into the array
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	pre-condition: text in the file needs to be in a specific format to read
+*/
 void import_data(Question *questions, int *num_questions) 
 {
     char filename[31];
@@ -457,7 +500,11 @@ void import_data(Question *questions, int *num_questions)
         printf("Data imported successfully!\n");
     }
 }
-
+/* export_data exports the existing records on a .txt file in a specific format that import_data can read
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	pre-condition: needs to have already existing records
+*/
 void export_data(Question *questions, int *num_questions) 
 {
     char filename[31];
@@ -496,10 +543,16 @@ void export_data(Question *questions, int *num_questions)
 // ----- GAME/SCORE FUNCTIONS -----
 // --------------------------------
 
+/* load_scores reads the information provided in the .txt file scores.txt
+	@param *scores is used to refer to the array scores[]
+	@param *num_scores is used to refer to the maximum ammount of scores
+	pre-condition: scores.txt needs to exist
+*/
 void load_scores(PlayerScore *scores, int *num_scores) 
 {
 	int flag1 = 0;
 	int flag2 = 0;
+	// use static int so it doesnt keep multiplying its score when called in display_scores
     static int loaded = 0;
     if (loaded) {
         flag1 = 1;
@@ -524,6 +577,11 @@ void load_scores(PlayerScore *scores, int *num_scores)
 	}
 }
 
+/* save_scores saves the scores and updates the .txt file scores.txt
+	@param *scores is used to refer to the array scores[]
+	@param num_scores is used to refer to the maximum ammount of scores
+	pre-condition: scores.txt needs to exist
+*/
 void save_scores(PlayerScore *scores, int num_scores) 
 {
 	int flag1 = 0;
@@ -555,6 +613,13 @@ void save_scores(PlayerScore *scores, int num_scores)
     fclose(fp);
 }
 
+/* add_score is used to add names and their corresponding scores to the array, and update the score if the name already exists
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	@param *name is used to compare to scores[].name to see if there is an existing name
+	@param score is integer used to add onto the player's existing score
+	pre-condition: max ammount of scores is 50
+*/
 void add_score(PlayerScore *scores, int *num_scores, char *name, int score) {
 	int flag1 = 0;
 	int flag2 = 0;
@@ -582,10 +647,26 @@ void add_score(PlayerScore *scores, int *num_scores, char *name, int score) {
 	}
 }
 
+/* display_scores is used to display the already existing scores using a bubble sort algorithm to sort from highest score to lowest score
+	@param *scores is used to refer to the array scores[]
+	@param *num_scores is used to refer to the maximum ammount of scores
+	pre-condition: load_scores needs to be static when called
+*/
 void display_scores(PlayerScore *scores, int *num_scores)
 {
     load_scores(scores, num_scores);
-    int i;
+    int i, j;
+    PlayerScore temp;
+    // bubble sort
+    for (i = 0; i < *num_scores - 1; i++) {
+        for (j = 0; j < *num_scores - i - 1; j++) {
+            if (scores[j].score < scores[j+1].score) {
+                temp = scores[j];
+                scores[j] = scores[j+1];
+                scores[j+1] = temp;
+            }
+        }
+    }
     printf("Top Scores:\n");
     printf("-----------\n");
     for (i = 0; i < *num_scores; i++) {
@@ -593,11 +674,16 @@ void display_scores(PlayerScore *scores, int *num_scores)
     }
 }
 
+/* play_game is used to provide the UI of the game itself that the use can play
+	@param *questions is used to refer to the array questions[]
+	@param num_questions is used to refer to the maximum amount of questions
+	@param *scores is used to refer to the array scores[]
+	@param *num_scores is used to refer to the maximum amount of scores
+	pre-condition: all of the integer parameters have to be initialized
+*/
 void play_game(Question *questions, int num_questions, PlayerScore *scores, int *num_scores) {
-	int flag1 = 0;
-	int flag2 = 0;
-	int flag3 = 0;
-	int flag4 = 0;
+    int flag1 = 0;
+    int flag2 = 0;
     char name[21];
     int i, j;
     printf("Enter your name: ");
@@ -605,6 +691,9 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
 
     int score = 0;
     while (1&&!flag2) {
+        // Reset flags
+        flag1 = 0;
+
         // Create an array of unique topics
         char topics[num_questions][21];
         int num_topics = 0;
@@ -622,78 +711,68 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
             }
         }
 		
-		if (!flag1){
         // Display topics and their associated questions
-        printf("\nAvailable topics:\n");
-        for (i = 0; i < num_topics; i++) {
-            printf("%d. %s\n", i + 1, topics[i]);
-            printf("   Questions:\n");
-            for (j = 0; j < num_questions; j++) {
-                if (strcmp(questions[j].topic, topics[i]) == 0) {
-                    printf("   - %s\n", questions[j].question);
+        if (!flag1){
+            printf("\nAvailable topics:\n");
+            for (i = 0; i < num_topics; i++) {
+                printf("%d. %s\n", i + 1, topics[i]);
+                printf("   Questions:\n");
+                for (j = 0; j < num_questions; j++) {
+                    if (strcmp(questions[j].topic, topics[i]) == 0) {
+                        printf("   - %s\n", questions[j].question);
+                    }
                 }
             }
-        }
-        printf("0. End game\n");
+            printf("0. End game\n");
 
-        int choice;
-        printf("\nEnter your choice: ");
-        scanf("%1d%*c", &choice);
+            int choice;
+            printf("\nEnter your choice: ");
+            scanf("%1d%*c", &choice);
 
-        if (choice == 0) {
-            printf("\n%s, your final score is %d.\n", name, score);
-            add_score(scores, num_scores, name, score);
-            flag2 = 1;
-        }
-		
-		if (!flag2){
-        if (choice < 1 || choice > num_topics) {
-            printf("\nInvalid choice. Please try again.\n");
-            flag3 = 1;
-        }
-		
-		if (!flag3){
-        int count = 0;
-        for (i = 0; i < num_questions; i++) {
-            if (strcmp(questions[i].topic, topics[choice - 1]) == 0) {
-                count++;
-            }
-        }
+            if (choice == 0) {
+                printf("\n%s, your final score is %d.\n", name, score);
+                add_score(scores, num_scores, name, score);
+                flag2 = 1;
+            } else if (choice < 1 || choice > num_topics) {
+                printf("\nInvalid choice. Please try again.\n");
+            } else {
+                int count = 0;
+                for (i = 0; i < num_questions; i++) {
+                    if (strcmp(questions[i].topic, topics[choice - 1]) == 0) {
+                        count++;
+                    }
+                }
 
-        if (count == 0) {
-            printf("\nNo questions available for this topic. Please choose another topic.\n");
-            flag4 = 1;
-        }
+                if (count == 0) {
+                    printf("\nNo questions available for this topic. Please choose another topic.\n");
+                } else {
+                    int index = rand() % count + 1;
+                    i = 0;
+                    while (index > 0) {
+                        if (strcmp(questions[i].topic, topics[choice - 1]) == 0) {
+                            index--;
+                        }
+                        i++;
+                    }
+                    i--;
 		
-		if(!flag4){
-        int index = rand() % count + 1;
-        i = 0;
-        while (index > 0) {
-            if (strcmp(questions[i].topic, topics[choice - 1]) == 0) {
-                index--;
-            }
-            i++;
-        }
-        i--;
-		
-		printf("\n%s\n", questions[i].topic);
-        printf("Q. %s\n", questions[i].question);
-        printf("1. %s\n", questions[i].choices[0]);
-        printf("2. %s\n", questions[i].choices[1]);
-        printf("3. %s\n", questions[i].choices[2]);
-        printf("\nType your answer: ");
-        char answer[31];
-        scanf("%s", answer);
+					printf("\n%s\n", questions[i].topic);
+        			printf("Q. %s\n", questions[i].question);
+        			printf("1. %s\n", questions[i].choices[0]);
+        			printf("2. %s\n", questions[i].choices[1]);
+        			printf("3. %s\n", questions[i].choices[2]);
+        			printf("\nType your answer: ");
+        			char answer[31];
+        			scanf("%s", answer);
 
-        if (strcmp(answer, questions[i].correct_choice) == 0) {
-            printf("Correct! You earned 1 point.\n");
-            score++;
-        } else {
-            printf("Sorry, the correct answer is: %s\n", questions[i].correct_choice);
-        }
-    	}
-    	}
-    	}
+       				if (strcmp(answer, questions[i].correct_choice) == 0) {
+        			    printf("Correct! You earned 1 point.\n");
+        			    score++;
+        			} else {
+            			printf("Sorry, the correct answer is: %s\n", questions[i].correct_choice);
+        			}
+    			}
+    		}
     	}
     }
 }
@@ -702,6 +781,11 @@ void play_game(Question *questions, int num_questions, PlayerScore *scores, int 
 // ----- MENU FUNCTIONS -----
 // --------------------------
 
+/* admin_menu is used to display the menu where users with admin access can modify and manipulate the records
+	@param *questions is used to refer to the array questions[]
+	@param *num_questions is used to refer to the maximum amount of questions
+	pre-condition: num_questions has to be initialized
+*/
 void admin_menu(Question *questions, int *num_questions) 
 {
     int choice = 0;
@@ -751,7 +835,13 @@ void admin_menu(Question *questions, int *num_questions)
         }
     }
 }
-
+/* game_menu is used to display the game menu where users may play the game and view their scores
+	@param *questions is used to refer to the array questions[]
+	@param num_questions is used to refer to the maximum amount of questions
+	@param *scores is used to refer to the array scores[]
+	@param *num_scores is used to refer to the maximum amount of scores
+	pre-condition: integer parameters need to be initialized
+*/
 void game_menu(Question *questions, int num_questions, PlayerScore *scores, int *num_scores) 
 {
     int choice;
@@ -780,7 +870,14 @@ void game_menu(Question *questions, int num_questions, PlayerScore *scores, int 
     } while (choice != 0);
 }
 
-
+/* main_menu is used to display the main menu where users may either access the admin menu or the game menu
+	@param *questions is used to refer to the array questions[]
+	@param num_questions is used to refer to the maximum amount of questions
+	@param *question is used to refer to the string question[]
+	@param *scores is used to refer to the array scores[]
+	@param *num_scores is used to refer to the maximum amount of scores
+	pre-condition: integer parameters need to be initialized
+*/
 void main_menu(Question *questions, int num_questions, char *question, PlayerScore *scores, int *num_scores) 
 {
     int choice = -1;
@@ -846,6 +943,8 @@ void main_menu(Question *questions, int num_questions, char *question, PlayerSco
     }
 }
 
+/* main() is used to initialize values and array/string sizes, return 0 and exits program when player exits main menu
+*/
 int main() {
 	Question questions[11];
     int num_questions = 0;
