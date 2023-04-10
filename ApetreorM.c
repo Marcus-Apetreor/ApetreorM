@@ -19,17 +19,17 @@ LEE JACOB MARCUS A. APETREOR, DLSU ID #12274410
 // ----- STRUCTS -----
 // -------------------
 
-typedef struct {
-    char strTopic[21]; 
-    int nQuestion; 
+typedef struct{
+	int nQuestion; 
+    char strTopic[151]; 
     char strQuestion[151]; 
-    char strChoices[3][31]; 
-    char strAnswer[31]; 
+    char strChoices[3][151]; 
+    char strAnswer[151]; 
 } Question;
 
-typedef struct {
+typedef struct{
+	int nScore;
     char strName[21];
-    int nScore;
 } PlayerScore;
 
 // -------------------------------
@@ -38,7 +38,7 @@ typedef struct {
 
 int find_question(Question *arrQuestions, int nQuestions, char *strQuestion);
 void add_record(Question *arrQuestions, int *nQuestions);
-void edit_record(Question *arrQuestions, int *nQuestions);
+void edit_record(Question *arrQuestions, int nQuestions);
 void delete_record(Question *arrQuestions, int *nQuestions);
 void import_data(Question *arrQuestions, int *nQuestions);
 void export_data(Question *arrQuestions, int *nQuestions);
@@ -46,10 +46,10 @@ void load_scores(PlayerScore *arrScores, int *nScores);
 void save_scores(PlayerScore *arrScores, int nScores);
 void add_score(PlayerScore *arrScores, int *nScores, char *strName, int nScore);
 void display_scores(PlayerScore *arrScores, int *nScores);
-void play_game(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, int *nScores);
+void play(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, int *nScores);
 void admin_menu(Question *arrQuestions, int *nQuestions);
 void game_menu(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, int *nScores);
-void main_menu(Question *arrQuestions, int nQuestions, char *strQuestion, PlayerScore *arrScores, int *nScores);
+void main_menu(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, int *nScores);
 
 
 // --------------------------------------------
@@ -85,10 +85,10 @@ int find_question(Question *arrQuestions, int nQuestions, char *strQuestion)
 void add_record(Question *arrQuestions, int *nQuestions)
 {
     char strQuestion[151];
-    char strAnswer[31];
-    char strChoice1[31];
-    char strChoice2[31];
-    char strChoice3[31];
+    char strAnswer[151];
+    char strChoice1[151];
+    char strChoice2[151];
+    char strChoice3[151];
     char strTopic[21]; 
     int back = 0;
 
@@ -164,268 +164,188 @@ void add_record(Question *arrQuestions, int *nQuestions)
 	@param *nQuestions is used to refer to the maximum amount of arrQuestions
 	pre-condition: needs to be an already existing record to edit
 */
-void edit_record(Question *arrQuestions, int *nQuestions)
+void edit_record(Question *arrQuestions, int nQuestions)
 {
-	int flag1 = 0;
-    int nChoice = 0;
+    char topic[21];
+    int question_num;
     int back = 0;
-    int index;
-    int error_checker = 0;
-    int i, j;
+	int i, j;
+	int index;
+    // Display available topics
+    printf("Available topics:\n");
+    for (i = 0; i < nQuestions; i++) {
+    // Check if this topic has already been printed
+    	int already_printed = 0;
+    	int found_topic = 0;
+    	for (j = 0; j < i && !found_topic; j++) {
+        	if (strcmp(arrQuestions[i].strTopic, arrQuestions[j].strTopic) == 0) {
+            	already_printed = 1;
+            	found_topic = 1;
+        	}
+    	}
+    	if (!already_printed) {
+        	printf("%s\n", arrQuestions[i].strTopic);
+    	}
+	}
 
-    // loop to ask for input again if error
-    while (!error_checker && !back){
-        char topics[*nQuestions][21];
-        int num_topics = 0;
-        for (i = 0; i < *nQuestions; i++) {
-            int is_duplicate = 0;
-            for (j = 0; j < num_topics; j++) {
-                if (!strcmp(topics[j], arrQuestions[i].strTopic)) {
-                    is_duplicate = 1;
-                    flag1 = 1;
-                }
-            }
-            if (!is_duplicate) {
-                strcpy(topics[num_topics], arrQuestions[i].strTopic);
-                num_topics++;
+    // Ask for topic
+    printf("Enter topic: ");
+    scanf("%s", topic);
+
+    // Display questions in the selected topic
+    printf("Questions in topic '%s':\n", topic);
+    int num_questions = 0;
+    for (i = 0; i < nQuestions; i++) {
+        if (strcmp(arrQuestions[i].strTopic, topic) == 0) {
+            printf("%d. %s\n", arrQuestions[i].nQuestion, arrQuestions[i].strQuestion);
+            num_questions++;
+        }
+    }
+
+    // Ask for question number to edit
+    if (!back) {
+        printf("Enter question number to edit: ");
+        scanf("%d", &question_num);
+
+        // Find the question to edit
+        index = -1;
+        int found_question = 0;  // initialize the flag variable to false
+        for (i = 0; i < nQuestions && !found_question; i++) {
+            if (strcmp(arrQuestions[i].strTopic, topic) == 0 && arrQuestions[i].nQuestion == question_num) {
+                index = i;
+                found_question = 1;  // set the flag variable to true
             }
         }
-        if (!flag1){
-        printf("\nAvailable topics:\n");
-        for (i = 0; i < num_topics; i++) {
-            printf("%d. %s\n", i + 1, topics[i]);
-        }
-        printf("0. Go Back \n");
-
-        // Ask for index of strTopic to edit
-        printf("Enter the number of the topic to edit (0-%d): ", num_topics);
-        scanf("%d", &index);
-
-        // Validate the index
-        if (index < 0 || index > num_topics) {
+        if (!found_question) {  // check the value of the flag variable
             printf("Error: Invalid Input\n");
-        } else if (index == 0){
-            error_checker = 1;
             back = 1;
-        } else {
-            index--;  // Decrement index to match array index
-            error_checker = 1;
-
-            // Display all arrQuestions from the selected strTopic
-            if (!back){
-            printf("\nList of questions from topic \"%s\":\n", topics[index]);
-            int num_questions_from_topic = 0;
-            for (i = 0; i < *nQuestions; i++) {
-                if (!strcmp(arrQuestions[i].strTopic, topics[index])) {
-                    printf("%d. %s\n", num_questions_from_topic + 1, arrQuestions[i].strQuestion);
-                    num_questions_from_topic++;
-                }
-            }
-            printf("0. Go Back\n");
-
-            // Ask for index of strQuestion to edit
-            printf("Enter the number of the question to edit (0-%d): ", num_questions_from_topic);
-            scanf("%d", &index);
-
-            // Validate the index
-            if (index < 0 || index > num_questions_from_topic) {
-                printf("Error: Invalid Input\n");
-                error_checker = 0;
-            } else if (index == 0){
-                back = 1;
-            } else {
-                index--;  // Decrement index to match array index
-            }
-        	}    
         }
+        if (!question_num) {
+        	printf("Going back...\n");
+        	back = 1;
 		}
     }
 
-    // Prompt for new information
-    char new_question[151];
-    char new_choice1[31];
-    char new_choice2[31];
-    char new_choice3[31];
-    char new_topic[21];
-    char new_correct_choice[31];
-	
-	while (!back){
-		printf("\n--- EDIT MENU ---\n");
-		printf("1. Edit Question \n");
-		printf("2. Edit Topic \n");
-		printf("3. Edit Choice 1 \n");
-		printf("4. Edit Choice 2 \n");
-		printf("5. Edit Choice 3 \n");
-		printf("6. Edit Correct Choice \n");
-		printf("0. Go Back \n");
-		printf("\nEnter your nChoice: ");
-		scanf("%1d", &nChoice);
-		getchar();// consume newline character
-		switch (nChoice){
-			case 1: {
-    			printf("Enter the new question: ");
-    			// %[^\n] to read multiple words
-    			scanf("%[^\n]", new_question);
-    			strcpy(arrQuestions[index].strQuestion, new_question);
-    			printf("Record updated successfully!\n");
-    			break;
-    		}
-			case 2: {
-    			printf("Enter the new topic: ");
-    			// %s to only read one word
-    			scanf("%s", new_topic);
-    			strcpy(arrQuestions[index].strTopic, new_topic);
-    			printf("Record updated successfully!\n");
-				break;
-			}
-			case 3: {
-    			printf("Enter the new choice 1: ");
-    			scanf("%s", new_choice1);
-    			strcpy(arrQuestions[index].strChoices[0], new_choice1);
-    			printf("Record updated successfully!\n");
-				break;
-			}
-			case 4: {
-    			printf("Enter the new choice 2: ");
-    			scanf("%s", new_choice2);
-    			strcpy(arrQuestions[index].strChoices[1], new_choice2);
-    			printf("Record updated successfully!\n");
-				break;
-			}
-			case 5: {
-    			printf("Enter the new choice 3: ");
-    			scanf("%s", new_choice3);
-    			strcpy(arrQuestions[index].strChoices[2], new_choice3);
-    			printf("Record updated successfully!\n");
-    			break;
-    		}
-			case 6: {
-				printf("Enter the new correct choice: ");
-    			scanf("%s", new_correct_choice);
-    			strcpy(arrQuestions[index].strAnswer, new_correct_choice);
-    			printf("Record updated successfully!\n");
-    			break;
-    		}
-			case 0: {
-				printf("Exiting edit menu");
-				back = 1;
-				break;
-			}
-			default: {
-				printf("Error: Invalid Input\n");
-            	fflush(stdin);
-            	nChoice = 0;
-				break;
-			}
+    // Ask for field to modify
+    if (!back) {
+        char field[10];
+        printf("Enter field to modify (topic, question, choice1, choice2, choice3, answer): ");
+        scanf("%s", field);
+
+        // Modify the selected field
+        if (strcmp(field, "topic") == 0) {
+            printf("Enter new topic: ");
+            scanf("%s", arrQuestions[index].strTopic);
+            printf("Record updated successfully!");
+        }
+        else if (strcmp(field, "question") == 0) {
+            printf("Enter new question: ");
+            scanf(" %[^\n]", arrQuestions[index].strQuestion);
+            printf("Record updated successfully!");
+        }
+        else if (strcmp(field, "choice1") == 0) {
+            printf("Enter new choice 1: ");
+            scanf(" %[^\n]", arrQuestions[index].strChoices[0]);
+            printf("Record updated successfully!");
+        }
+        else if (strcmp(field, "choice2") == 0) {
+            printf("Enter new choice 2: ");
+            scanf(" %[^\n]", arrQuestions[index].strChoices[1]);
+            printf("Record updated successfully!");
+        }
+        else if (strcmp(field, "choice3") == 0) {
+            printf("Enter new choice 3: ");
+            scanf(" %[^\n]", arrQuestions[index].strChoices[2]);
+            printf("Record updated successfully!");
+        }
+        else if (strcmp(field, "answer") == 0) {
+            printf("Enter new answer: ");
+            scanf("%s", arrQuestions[index].strAnswer);
+            printf("Record updated successfully!");
+        }
+        else {
+            printf("Error: Invalid Input\n");
 		}
 	}
 }
+    	
 
 /* delete_record makes the user choose a strTopic then an existing strQuestion inside that strTopic to delete
 	@param *arrQuestions is used to refer to the array arrQuestions[]
 	@param *nQuestions is used to refer to the maximum amount of arrQuestions
 	pre-condition: needs to be an already existing record to delete
 */
-void delete_record(Question *arrQuestions, int *nQuestions) 
+void delete_record(Question *arrQuestions, int *nQuestions)
 {
-	int flag1 = 0;
-    int i, j;
-    int topic_index, question_index;
-    int back = 0;
-    int error_checker = 0;
+    char topic[21];
+    int i, j, questionNumber, choice;
+    int topicFound = 0, questionFound = 0;
 
-    // Create an array of unique topics
-    char topics[*nQuestions][50];
-    int num_topics = 0;
-    int found = 0;
-	for (i = 0; i < *nQuestions && !found; i++) {
-    	int is_duplicate = 0;
-    	for (j = 0; j < num_topics && !found; j++) {
-        	if (strcmp(topics[j], arrQuestions[i].strTopic) == 0) {
-            	is_duplicate = 1;
-            	found = 1;
-        	}
-    	}
-    	if (!is_duplicate) {
-        	strcpy(topics[num_topics], arrQuestions[i].strTopic);
-        	num_topics++;
-    	}
-	}
-
-    // Display topics and their associated arrQuestions
-    printf("\nAvailable topics:\n");
-    for (i = 0; i < num_topics; i++) {
-        printf("%d. %s\n", i + 1, topics[i]);
-    }
-
-    // Prompt the user to choose a strTopic
-    while (!error_checker){
-        printf("Enter the number of the topic to delete a question from (type '0' to go back): ");
-        scanf("%d", &topic_index);
-        if (topic_index < 0 || topic_index > num_topics) {
-            printf("Error: Invalid Input\n");
-            getchar();
-        } else if (topic_index == 0) {
-            back = 1;
-            error_checker = 1;
-        } else {
-            error_checker = 1;
+    // Display available topics
+    printf("Available topics:\n");
+    for (i = 0; i < *nQuestions; i++) {
+        // Check if topic has already been displayed
+        if (strcmp(arrQuestions[i].strTopic, "") != 0) {
+            int topicDisplayed = 0;
+            for (j = 0; j < i && !topicDisplayed; j++) {
+                if (strcmp(arrQuestions[i].strTopic, arrQuestions[j].strTopic) == 0) {
+                    topicDisplayed = 1;
+                }
+            }
+            // If topic has not been displayed, display it
+            if (!topicDisplayed) {
+                printf("%s\n", arrQuestions[i].strTopic);
+            }
         }
     }
 
-    if (!back) {
-        // Display arrQuestions associated with the chosen strTopic
-        printf("Questions in topic %s:\n", topics[topic_index - 1]);
-        int num_questions_in_topic = 0;
+    // Ask for topic
+    printf("Enter topic: ");
+    scanf("%s", topic);
+
+    // Check if topic exists
+    for (i = 0; i < *nQuestions; i++) {
+        if (strcmp(arrQuestions[i].strTopic, topic) == 0) {
+            topicFound = 1;
+            printf("%d. %s\n", arrQuestions[i].nQuestion, arrQuestions[i].strQuestion);
+        }
+    }
+
+    // If topic exists, ask for question to delete
+    if (topicFound) {
+        printf("Enter question number to delete: ");
+        scanf("%d", &questionNumber);
+
+        // Check if question exists
         for (i = 0; i < *nQuestions; i++) {
-            if (strcmp(arrQuestions[i].strTopic, topics[topic_index - 1]) == 0) {
-                num_questions_in_topic++;
-                printf("%d. %s\n", num_questions_in_topic, arrQuestions[i].strQuestion);
+            if (strcmp(arrQuestions[i].strTopic, topic) == 0 && arrQuestions[i].nQuestion == questionNumber) {
+                questionFound = 1;
+                printf("Are you sure you want to delete this record? (1 = Yes, 2 = No): ");
+                scanf("%d", &choice);
+
+                // Delete record if user confirms deletion
+                if (choice == 1) {
+                    for (j = i; j < *nQuestions - 1; j++) {
+                        arrQuestions[j] = arrQuestions[j + 1];
+                        // Decrement question number of questions after the deleted question
+                        if (strcmp(arrQuestions[j].strTopic, topic) == 0) {
+                            arrQuestions[j].nQuestion--;
+                        }
+                    }
+                    (*nQuestions)--;
+                    printf("Record deleted successfully!\n");
+                } else {
+                    printf("Record not deleted.\n");
+                }
             }
         }
 
-        // Prompt the user to choose a strQuestion
-        error_checker = 0;
-        while (!error_checker) {
-            printf("Enter the number of the question to delete (type '0' to go back): ");
-            scanf("%d", &question_index);
-            if (question_index < 0 || question_index > num_questions_in_topic) {
-                printf("Error: Invalid Input\n");
-                getchar();
-            } else if (question_index == 0) {
-                back = 1;
-                error_checker = 1;
-            } else {
-                error_checker = 1;
-            }
+        if (!questionFound) {
+            printf("Error: Invalid Input\n");
         }
-
-        if (!back) {
-            // Find the index of the selected strQuestion in the original array
-            int original_index = 0;
-            for (i = 0; i < *nQuestions; i++) {
-                if (strcmp(arrQuestions[i].strTopic, topics[topic_index - 1]) == 0) {
-                    original_index++;
-                }
-                if (original_index == question_index) {
-                    flag1 = 1;
-                }
-            }
-            
-            if (!flag1){
-			// Shift all the elements after the deleted element to fill the gap
-        	for (i = original_index; i < *nQuestions - 1; i++) {
-        	    arrQuestions[i] = arrQuestions[i + 1];
-        	}
-        	(*nQuestions)--;
-        	printf("The selected question has been deleted.\n");
-    	} else {
-        	printf("Returning to main menu...\n");
-    	}
-	} else {
-    printf("Returning to main menu...\n");
-	}
-	}
+    } else {
+        printf("Error: Invalid Input\n");
+    }
 }
             
 /* import_data imports information from .txt files and turns it into a record that is stored into the array
@@ -453,6 +373,7 @@ void import_data(Question *arrQuestions, int *nQuestions)
         printf("Enter the filename to load (type '0' to go back): ");
         scanf("%s", filename);
         if (strcmp(filename, "0") == 0) {
+        	printf("Going back...\n");
             error_checker = 1;
         }
         if (!error_checker) {
@@ -500,6 +421,7 @@ void import_data(Question *arrQuestions, int *nQuestions)
         printf("Data imported successfully!\n");
     }
 }
+
 /* export_data exports the existing records on a .txt file in a specific format that import_data can read
 	@param *arrQuestions is used to refer to the array arrQuestions[]
 	@param *nQuestions is used to refer to the maximum amount of arrQuestions
@@ -527,7 +449,7 @@ void export_data(Question *arrQuestions, int *nQuestions)
     // Write contents of array of arrQuestions to file
     int i;
     if (!error_checker){
-    for (i = 1; i < *nQuestions; i++) {
+    for (i = 0; i < *nQuestions; i++) {
         fprintf(fp, "%s\n%d\n%s\n%s\n%s\n%s\n%s\n\n", arrQuestions[i].strTopic, arrQuestions[i].nQuestion, arrQuestions[i].strQuestion, arrQuestions[i].strChoices[0], arrQuestions[i].strChoices[1], arrQuestions[i].strChoices[2], arrQuestions[i].strAnswer);
     }
 
@@ -550,30 +472,25 @@ void export_data(Question *arrQuestions, int *nQuestions)
 */
 void load_scores(PlayerScore *arrScores, int *nScores) 
 {
-    int flag1 = 0;
-    int flag2 = 0;
-    // Initialize loaded to 1 so that the file is only read once
-    static int loaded = 1;
-    if (loaded) {
-        flag1 = 1;
-    }
-
-    int i = 0;
-    if (!flag1){
+    static int loaded = 0;
+    int file_unopened = 0; // flag variable
+    if (!loaded) {
         FILE *fp = fopen("scores.txt", "r");
         if (fp == NULL) {
             printf("Unable to open file for reading scores!\n");
-            flag2 = 1;
+            file_unopened=1;
         }
-        if (!flag2){
-            while (fscanf(fp, "%s\n%d\n\n", arrScores[i].strName, &arrScores[i].nScore) != EOF) {
-                i++;
-            }
-            *nScores = i;
-            fclose(fp);
+		
+		if(!file_unopened){
+        int i = 0;
+        while (fscanf(fp, "%s\n%d\n\n", arrScores[i].strName, &arrScores[i].nScore) != EOF) {
+            i++;
+        }
+        *nScores = i;
+        fclose(fp);
 
-            loaded = 1;
-        }
+        loaded = 1;
+    	}
     }
 }
 
@@ -654,24 +571,22 @@ void add_score(PlayerScore *arrScores, int *nScores, char *strName, int nAdd) {
 */
 void display_scores(PlayerScore *arrScores, int *nScores)
 {
-	int i;
-    int new_scores_loaded = 0;
+    int i, j;
+    PlayerScore temp;
+
     load_scores(arrScores, nScores);
-    if (new_scores_loaded) {
-        // new scores have been loaded, so re-sort the array
-        int i, j;
-        PlayerScore temp;
-        // bubble sort
-        for (i = 0; i < *nScores - 1; i++) {
-            for (j = 0; j < *nScores - i - 1; j++) {
-                if (arrScores[j].nScore < arrScores[j+1].nScore) {
-                    temp = arrScores[j];
-                    arrScores[j] = arrScores[j+1];
-                    arrScores[j+1] = temp;
-                }
+
+    // sort the array using bubble sort
+    for (i = 0; i < *nScores - 1; i++) {
+        for (j = 0; j < *nScores - i - 1; j++) {
+            if (arrScores[j].nScore < arrScores[j+1].nScore) {
+                temp = arrScores[j];
+                arrScores[j] = arrScores[j+1];
+                arrScores[j+1] = temp;
             }
         }
     }
+
     printf("Top Scores:\n");
     printf("-----------\n");
     for (i = 0; i < *nScores; i++) {
@@ -687,101 +602,87 @@ void display_scores(PlayerScore *arrScores, int *nScores)
 	pre-condition: all of the integer parameters have to be initialized
 */
 void play_game(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, int *nScores) {
-	int nAdd = 0;
-    int flag1 = 0;
-    int flag2 = 0;
-    char strName[21];
+    int score = 0;
     int i, j;
+    int isTopicDisplayed;
+    int incorrect;
+    int loop = 1;
+    char playerName[21];
     printf("Enter your name: ");
-    scanf("%s", strName);
-
-    while (1&&!flag2) {
-        // Reset flags
-        flag1 = 0;
-
-        // Create an array of unique topics
-        char topics[nQuestions][21];
-        int num_topics = 0;
-        for (i = 0; i < nQuestions; i++) {
-            int is_duplicate = 0;
-            for (j = 0; j < num_topics; j++) {
-                if (strcmp(topics[j], arrQuestions[i].strTopic) == 0) {
-                    is_duplicate = 1;
-                    flag1 = 1;
-                }
-            }
-            if (!is_duplicate && !flag1) {
-                strcpy(topics[num_topics], arrQuestions[i].strTopic);
-                num_topics++;
-            }
-        }
-
-        // Display topics and their associated arrQuestions
-        if (!flag1){
-            printf("\nAvailable topics:\n");
-            for (i = 0; i < num_topics; i++) {
-                printf("%d. %s\n", i + 1, topics[i]);
-                printf("   Questions:\n");
-                for (j = 0; j < nQuestions; j++) {
-                    if (strcmp(arrQuestions[j].strTopic, topics[i]) == 0) {
-                        printf("   - %s\n", arrQuestions[j].strQuestion);
-                    }
-                }
-            }
-            printf("0. End game\n");
-
-            int nChoice;
-            printf("\nEnter your choice: ");
-            scanf("%1d%*c", &nChoice);
-
-            if (nChoice == 0) {
-                printf("\n%s, your final score is %d.\n", strName, nAdd);
-                add_score(arrScores, nScores, strName, nAdd);
-                flag2 = 1;  // set flag2 to 1 to exit while loop
-            } else if (nChoice < 1 || nChoice > num_topics) {
-                printf("\nInvalid choice. Please try again.\n");
-            } else {
-                int count = 0;
-                for (i = 0; i < nQuestions; i++) {
-                    if (strcmp(arrQuestions[i].strTopic, topics[nChoice - 1]) == 0) {
-                        count++;
-                    }
-                }
-
-                if (count == 0) {
-                    printf("\nNo questions available for this topic. Please choose another topic.\n");
-                } else {
-                    int index = rand() % count + 1;
-                    i = 0;
-                    while (index > 0) {
-                        if (strcmp(arrQuestions[i].strTopic, topics[nChoice - 1]) == 0) {
-                            index--;
-                        }
-                        i++;
-                    }
-                    i--;
-
-                    printf("\n%s\n", arrQuestions[i].strTopic);
-                    printf("Q. %s\n", arrQuestions[i].strQuestion);
-                    printf("1. %s\n", arrQuestions[i].strChoices[0]);
-                    printf("2. %s\n", arrQuestions[i].strChoices[1]);
-                    printf("3. %s\n", arrQuestions[i].strChoices[2]);
-                    printf("\nType your answer: ");
-                    char answer[31];
-                    scanf("%s", answer);
-
-
-       				if (strcmp(answer, arrQuestions[i].strAnswer) == 0) {
-        			    printf("Correct! You earned 1 point.\n");
-        			    nAdd++;
-        			} else {
-            			printf("Sorry, the correct answer is: %s\n", arrQuestions[i].strAnswer);
-        			}
-    			}
+    scanf("%s", playerName);
+    getchar(); // clear the newline character from the input buffer
+    
+    while (loop) {
+    	incorrect = 0;
+        printf("\nAvailable Topics:\n");
+        printf("-----------------\n");
+        
+        // display the list of available topics
+        int topicCount = 1;	
+		for (i = 0; i < nQuestions; i++) {
+    		isTopicDisplayed = 0;
+    		j = 0;
+    		while (j < i && !isTopicDisplayed) {
+        		if (strcmp(arrQuestions[i].strTopic, arrQuestions[j].strTopic) == 0) {
+            		isTopicDisplayed = 1;
+        		}
+        		j++;
     		}
+    		if (!isTopicDisplayed) {
+        		printf("%d. %s\n", topicCount++, arrQuestions[i].strTopic);
+    		}
+		}
+
+        
+        // let the player choose a topic
+        printf("\nChoose a topic (enter a number): ");
+        int topicChoice;
+        scanf("%d", &topicChoice);
+        getchar(); // clear the newline character from the input buffer
+        
+        // display a random question from the chosen topic
+        printf("\nQuestion: ");
+        Question chosenQuestion;
+        do {
+            int randomQuestionIndex = rand() % nQuestions;
+            chosenQuestion = arrQuestions[randomQuestionIndex];
+        } while (strcmp(chosenQuestion.strTopic, arrQuestions[topicChoice - 1].strTopic) != 0);
+        
+        printf("%s\n", chosenQuestion.strQuestion);
+        for (i = 0; i < 3; i++) {
+            printf("%s\n", chosenQuestion.strChoices[i]);
+        }
+        printf("\nEnter your answer: ");
+        char playerAnswer[151];
+        fgets(playerAnswer, 151, stdin);
+        strtok(playerAnswer, "\n"); // remove the newline character from the player's answer
+        
+        // check if the answer is correct
+        if (strcmp(playerAnswer, chosenQuestion.strAnswer) == 0) {
+            printf("Correct!\n");
+            score++;
+        } else {
+            printf("Sorry, that's incorrect.\n");
+            incorrect = 1;
+        }
+        
+        if (!incorrect){
+	        // let the player choose whether to end the game or not
+        	printf("\nYour score is: %d\n", score);
+        	printf("Do you want to end the game? (y/n): ");
+        	char endChoice;
+        	scanf("%c", &endChoice);
+        	getchar(); // clear the newline character from the input buffer
+        	
+        	if (endChoice == 'y') {
+            	printf("\n%s, your final score is: %d\n", playerName, score);
+            	add_score(arrScores, nScores, playerName, score);
+            	loop = 0;
+        	}
     	}
     }
 }
+
 
 // --------------------------
 // ----- MENU FUNCTIONS -----
@@ -814,7 +715,7 @@ void admin_menu(Question *arrQuestions, int *nQuestions)
                 break;
             }
             case 2: {
-                edit_record(arrQuestions, nQuestions);
+                edit_record(arrQuestions, *nQuestions);
                 break;
             }
             case 3: {
@@ -884,7 +785,7 @@ void game_menu(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, i
 	@param *nScores is used to refer to the maximum amount of arrScores
 	pre-condition: integer parameters need to be initialized
 */
-void main_menu(Question *arrQuestions, int nQuestions, char *strQuestion, PlayerScore *arrScores, int *nScores) 
+void main_menu(Question *arrQuestions, int nQuestions, PlayerScore *arrScores, int *nScores) 
 {
     int nChoice = -1;
     int back = 0;
@@ -954,11 +855,10 @@ void main_menu(Question *arrQuestions, int nQuestions, char *strQuestion, Player
 int main() {
 	Question arrQuestions[151];
     int nQuestions = 0;
-    char strQuestion[151];
     PlayerScore arrScores[151];
     int nScores = 0;
     
-    main_menu(arrQuestions, nQuestions, strQuestion, arrScores, &nScores);
+    main_menu(arrQuestions, nQuestions, arrScores, &nScores);
     
     return 0;
 }
